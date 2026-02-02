@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini API URL 內容讀取範例</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        /* 基礎樣式設計 */
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #1a73e8;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #1557b0;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #result-area {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-left: 4px solid #1a73e8;
+            border-radius: 4px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+
+        .error {
+            color: #d93025;
+            font-weight: bold;
+        }
+
+        .source-link {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #1a73e8;
+            text-decoration: none;
+        }
+
+        .source-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gemini URL 助手</h1>
+    
+    <div class="input-group">
+        <label for="urlInput">請輸入網址 (URL):</label>
+        <input type="text" id="urlInput" placeholder="https://example.com" value="https://zh.wikipedia.org/wiki/Gemini">
+    </div>
+
+    <button id="submitBtn">獲取並總結內容</button>
+
+    <div id="result-area">結果將顯示在此處...2</div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        const apiKey = "AIzaSyB-Z-Kidqr5Uo-N29m4bJuGKcyTRUXy0ns";
+        const model = "gemini-2.5-flash-preview-09-2025";
+
+        /**
+         * 實作指數退避的 API 呼叫函式
+         */
+        async function fetchGeminiWithRetry(url, payload, maxRetries = 5) {
+            let delay = 1000; // 起始延遲 1s
+
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        return await response.json();
+                    }
+                    
+                    // 如果不是 200 OK，且還沒到最大重試次數，則等待
+                    if (i === maxRetries - 1) throw new Error(`API 請求失敗: ${response.status}`);
+                    
+                } catch (error) {
+                    if (i === maxRetries - 1) throw error;
+                }
+
+                // 等待一段時間後重試 (指數退避: 1s, 2s, 4s, 8s, 16s)
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+        }
+
+        $('#submitBtn').on('click', async function() {
+            const userUrl = $('#urlInput').val().trim();
+            const $result = $('#result-area');
+            const $btn = $('#submitBtn');
+
+            if (!userUrl) {
+                $result.html('<span class="error">請輸入有效的網址！</span>');
+                return;
+            }
+
+            // 更新 UI 狀態
+            $result.html('<span class="loading">正在讀取網址並分析內容，請稍候...</span>');
+            $btn.prop('disabled', true);
+
+            const apiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            
+            // 建立 payload，啟用 google_search 工具以讀取網頁內容
+            const payload = {
+                contents: [{
+                    parts: [{
+                        text: `請存取並閱讀這個網址的內容，然後提供一個簡短的總結：${userUrl}`
+                    }]
+                }],
+                tools: [{
+                    "google_search": {}
+                }]
+            };
+
+            try {
+                const data = await fetchGeminiWithRetry(apiEndpoint, payload);
+                
+                // 解析回應文字
+                const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                // 解析引用來源 (Grounding Metadata)
+                const sources = data.candidates?.[0]?.groundingMetadata?.groundingAttributions || [];
+
+                if (textResult) {
+                    let htmlOutput = `<div>${textResult.replace(/\n/g, '<br>')}</div>`;
+                    
+                    if (sources.length > 0) {
+                        htmlOutput += '<hr><strong>參考來源：</strong>';
+                        sources.forEach(source => {
+                            if (source.web) {
+                                htmlOutput += `<a class="source-link" href="${source.web.uri}" target="_blank">${source.web.title || source.web.uri}</a>`;
+                            }
+                        });
+                    }
+                    
+                    $result.html(htmlOutput);
+                } else {
+                    $result.html('<span class="error">未能從 API 取得有效回應。</span>');
+                }
+
+            } catch (err) {
+                $result.html(`<span class="error">發生錯誤: ${err.message}</span>`);
+            } finally {
+                $btn.prop('disabled', false);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
