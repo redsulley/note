@@ -140,10 +140,11 @@
         //
         const apiKey = "AIzaSyB-Z-Kidqr5Uo-N29m4bJuGKcyTRUXy0ns";
         //在此Canvas模式環境中必須使用正確的模型標識符
-        //成功const modelName = "gemini-2.5-flash-preview-09-2025";
+        //成功
+        const modelName = "gemini-2.5-flash-preview-09-2025";
         //失敗const modelName = "gemini-2.5-flash-preview";
         //失敗const modelName = "gemini-1.5-flash";
-        const modelName = "gemini-1.5-flash-preview";
+        //失敗const modelName = "gemini-1.5-flash-preview";
 
         async function callGemini(prompt, retries = 5, delay = 1000) {
             const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
