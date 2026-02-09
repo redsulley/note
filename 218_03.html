@@ -172,7 +172,7 @@
     <div class="container">
         <header>
             <h1>L&B圖書館 AI找書</h1>
-            <p class="subtitle">告訴我您的心情或想找的主題，我從書庫中為您挑選。(版本1.6)</p>
+            <p class="subtitle">告訴我您的心情或想找的主題，我從書庫中為您挑選。(版本1.7)</p>
         </header>
 
         <div class="input-group">
@@ -3259,7 +3259,12 @@ ${JSON.stringify(bookData)}
                         })
                     });
 
-                    if (!response.ok) throw new Error('API Request Failed');
+                    if (!response.ok) {
+                        const errorDetail = await response.json();
+                        console.error("Google API 詳細報報錯:", errorDetail);
+                        // 這裡會把 Google 給的錯誤訊息直接拋出給外層的 catch
+                        throw new Error(`API 報錯：${errorDetail.error.message} (代碼: ${errorDetail.error.code})`);
+                    }
 
                     const data = await response.json();
                     return data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，我現在無法生成推薦。";
