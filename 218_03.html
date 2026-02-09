@@ -262,7 +262,7 @@
     <div class="container">
         <header>
             <h1>L&B圖書館 AI找書</h1>
-            <p class="subtitle">告訴我您的心情或想找的主題，我從書庫中為您挑選。(版本1.14)</p>
+            <p class="subtitle">告訴我您的心情或想找的主題，我從書庫中為您挑選。(版本1.15)</p>
         </header>
 
         <div class="input-group">
@@ -288,9 +288,8 @@
     <script>
         const apiKey = "AIzaSyADe77fkbFfWMyP8F3mGEp4lD1ApmsivG8";
         //成功，但忙碌中斷 const modelName = "gemini-2.5-flash-preview-09-2025";
-        //成功, const modelName = "gemini-3-flash-preview";
-        //
-        const modelName = "gemini-3-flash";
+        //成功, 
+        const modelName = "gemini-3-flash-preview";
 
         // 從附件 CSV 提取的部分書目資料（作為範例庫）
         const bookData = [
@@ -3321,7 +3320,7 @@ ${JSON.stringify(bookData)}
 # Task
 請根據使用者的具體需求，執行以下任務：
 1. 分析需求：分析使用者的潛在動機（想解決問題、尋求慰藉或純屬娛樂）。
-2. 精選書目：從清單中挑選 2-3 本最合適的書。若無完美匹配，請挑選「概念最接近」的書籍。
+2. 精選書目：從清單中挑選 4 本最合適的書。若無完美匹配，請挑選「概念最接近」的書籍。
 3. 撰寫推薦：依照下方指定格式回覆。
 
 # Response Format (JSON Array)
