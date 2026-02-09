@@ -120,11 +120,101 @@
         }
 
         #result-content {
-            background: var(--secondary-color);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            white-space: pre-wrap;
+            background: transparent;
+            /* 移除原本的灰色背景 */
+            padding: 0;
+            border: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* 書籍卡片主體 */
+        .book-card {
+            background: #ffffff;
             border: 1px solid #e1e8ed;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            width: calc(50% - 10px);
+            /* 預設一排兩個 */
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 卡片內文區域 */
+        .card-body {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .card-title {
+            color: var(--primary-color);
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card-author {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .card-label {
+            font-weight: bold;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .card-text {
+            font-size: 0.95rem;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        /* 線上閱讀按鈕 */
+        .card-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            text-align: center;
+        }
+
+        .read-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 10px;
+            background-color: var(--primary-color);
+            color: white !important;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .read-btn:hover {
+            background-color: #357abd;
+        }
+
+        /* 針對手機版的調整 */
+        @media (max-width: 600px) {
+            .book-card {
+                width: 100%;
+            }
         }
 
         /* Loading Animation */
@@ -172,7 +262,7 @@
     <div class="container">
         <header>
             <h1>L&B圖書館 AI找書</h1>
-            <p class="subtitle">告訴我您的心情或想找的主題，我從書庫中為您挑選。(版本1.11)</p>
+            <p class="subtitle">告訴我您的心情或想找的主題，我從書庫中為您挑選。(版本1.12)</p>
         </header>
 
         <div class="input-group">
@@ -3233,11 +3323,17 @@ ${JSON.stringify(bookData)}
 2. 精選書目：從清單中挑選 2-3 本最合適的書。若無完美匹配，請挑選「概念最接近」的書籍。
 3. 撰寫推薦：依照下方指定格式回覆。
 
-# Response Format (請嚴格遵守，不要使用 Markdown 符號如 ** 或 #，保持純文字感)
-1. 書名與作者：[書名] / [作者]
-2. 推薦理由：[請結合書籍摘要與使用者需求，說明這本書能如何幫助或啟發讀者]
-3. 給讀者的小建議：[一段溫暖、具鼓勵性且實用的閱讀建議]
-4. 線上資源：https://lb30.libraryandbook.net/Book_detial/{bookid}
+# Response Format (JSON Array)
+請僅回傳一個 JSON 陣列（不要包含任何 Markdown 標籤或額外文字），格式如下：
+[
+    {
+        "title": "書名",
+        "author": "作者",
+        "reason": "推薦理由",
+        "suggestion": "小建議",
+        "bookid": "ID"
+    }
+]
 
 # Constraints
 - 連結中的 {bookid} 必須替換為該書在 JSON 資料中的正確 ID。
@@ -3292,7 +3388,30 @@ ${JSON.stringify(bookData)}
 
                 try {
                     const recommendation = await callGemini(query);
-                    $('#result-content').text(recommendation);
+                    const books = JSON.parse(recommendation);
+
+                    let htmlContent = '';
+                    books.forEach(book => {
+                        htmlContent += `
+            <div class="book-card">
+                <div class="card-body">
+                    <div class="card-title">${book.title}</div>
+                    <div class="card-author">${book.author}</div>
+                    
+                    <span class="card-label">推薦理由</span>
+                    <p class="card-text">${book.reason}</p>
+                    
+                    <span class="card-label">館員悄悄話</span>
+                    <p class="card-text" style="font-style: italic; color: #5d6d7e;">${book.suggestion}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="https://lb30.libraryandbook.net/Book_detial/${book.bookid}" target="_blank" class="read-btn">立即線上閱讀</a>
+                </div>
+            </div>
+            `;
+                    });
+
+                    $('#result-content').html(htmlContent);
                     $('#result-container').fadeIn();
                 } catch (error) {
                     console.error("DEBUG 資訊:", error);
