@@ -31,7 +31,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
         }
 
         .container {
@@ -254,6 +254,30 @@
             margin-top: 20px;
             text-align: center;
         }
+
+        .example-box .title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .example-box .list {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .example-box .list a {
+            display: block;
+            border: 1px solid #555;
+            border-radius: 10px;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .example-box .list a:hover {
+            background: #fffde1;
+        }
     </style>
 </head>
 
@@ -262,11 +286,21 @@
     <div class="container">
         <header>
             <h1>L&B圖書館 AI找書</h1>
-            <p class="subtitle">告訴我您的心情或想找的主題，我從書庫中為您挑選。(版本1.15)</p>
+            <p class="subtitle">告訴我您的心情或想找的主題，我從書庫中為您挑選。</p>
         </header>
 
         <div class="input-group">
             <textarea id="user-query" placeholder="例如：我想看關於社會心理學的書，或者好笑有趣的內容..."></textarea>
+        </div>
+
+        <div class="example-box">
+            <div class="title">參考範例</div>
+            <div class="list">
+                <a class="item_1" href="javascript:void();" onclick="copy_to_user_query(this);">範例1...</a>
+                <a class="item_2" href="javascript:void();" onclick="copy_to_user_query(this);">範例2...</a>
+                <a class="item_3" href="javascript:void();" onclick="copy_to_user_query(this);">範例3...</a>
+                <a class="item_4" href="javascript:void();" onclick="copy_to_user_query(this);">範例4...</a>
+            </div>
         </div>
 
         <button id="search-btn">開始推薦</button>
@@ -283,6 +317,7 @@
         <div class="book-list-preview">
             目前書庫包含：社會心理學、台灣歷史、環境保護、商業管理、投資理財、語言學習、職場技能、教育研究及豐富的兒童繪本。
         </div>
+        <div style="text-align: center;">版本1.16</div>
     </div>
 
     <script>
@@ -3428,6 +3463,11 @@ ${JSON.stringify(bookData)}
                 $('#error-box').text(msg).fadeIn();
             }
         });
+
+        function copy_to_user_query(arg){
+            $("#user_query").val($(arg).text());
+
+        }
     </script>
 
 </body>
