@@ -172,7 +172,7 @@
     <div class="container">
         <header>
             <h1>L&B圖書館 AI找書</h1>
-            <p class="subtitle">告訴我您的心情或想找的主題，我從書庫中為您挑選。(版本1.7)</p>
+            <p class="subtitle">告訴我您的心情或想找的主題，我從書庫中為您挑選。(版本1.9)</p>
         </header>
 
         <div class="input-group">
@@ -3296,8 +3296,9 @@ ${JSON.stringify(bookData)}
                     $('#result-container').fadeIn();
                 } catch (error) {
                     console.error("DEBUG 資訊:", error);
-                    showError("錯誤原因：" + error.message);
+                    //showError("錯誤原因：" + error.message);
                     //showError("服務暫時繁忙，請稍後再試。");
+                    showError("目前諮詢人數較多，系統暫時無法處理，請您給我們一點時間。");
                 } finally {
                     $('#loader').hide();
                     $('#search-btn').prop('disabled', false);
