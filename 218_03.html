@@ -317,7 +317,7 @@
         <div class="book-list-preview">
             目前書庫包含：社會心理學、台灣歷史、環境保護、商業管理、投資理財、語言學習、職場技能、教育研究及豐富的兒童繪本。
         </div>
-        <div style="text-align: center;">版本2.1</div>
+        <div style="text-align: center;">版本2.2</div>
     </div>
 
     <script>
@@ -3380,8 +3380,10 @@ ${JSON.stringify(bookData)}
             const maxRetries = 5;
 
             while (retries < maxRetries) {
+                // 指向你的 Hugging Face Space 網址 (記得結尾加 /recommend)
+                const hf_api_url = "https://https://ui-cruis-lb.hf.space/recommend";
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+                    const response = await fetch(hf_api_url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
